@@ -185,6 +185,33 @@ def test_create_weekly_event_from_form(client, dash):
     assert not problems and any(e["id"] == "kids-quran" for e in config.events)
 
 
+def test_short_stop_after_warns_on_save_list_and_form(client, dash):
+    store = dash[1]
+    r = client.post("/events/save", data=form_for_weekly(client.csrf, version(store), max_seconds="1"))
+    assert r.status_code == 303, r.text
+    page = client.get("/events").text
+    assert 'class="flash warn"' in page and "stops after 1s, which is usually too short" in page
+    assert "stops after 1s</span>" in page
+    form = client.get("/events/kids-quran/edit").text
+    assert "data-short-stop-hint >" in form          # hint rendered visible (no `hidden`)
+
+
+def test_normal_stop_after_has_no_warning(client, dash):
+    store = dash[1]
+    client.post("/events/save", data=form_for_weekly(client.csrf, version(store), max_seconds="120"))
+    page = client.get("/events").text
+    assert "too short" not in page and "stops after" not in page
+    assert "data-short-stop-hint hidden" in client.get("/events/kids-quran/edit").text
+
+
+@pytest.mark.parametrize("value,expected", [(1, 1), (9.5, 9.5), (10, None), (120, None),
+                                            (None, None), (0, None), ("5", None)])
+def test_short_stop(dash, value, expected):
+    dashboard = dash[0]
+    action = {} if value is None else {"max_seconds": value}
+    assert dashboard.short_stop(action) == expected
+
+
 @pytest.mark.parametrize("over,needle", [
     ({"days": []}, "non-empty"),
     ({"time": ""}, "bad trigger"),

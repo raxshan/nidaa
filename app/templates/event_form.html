@@ -72,7 +72,10 @@
         {% for f in audio_files %}<option {{ 'selected' if a.audio == f }}>{{ f }}</option>{% endfor %}
         {% if a.audio and a.audio not in audio_files %}<option selected>{{ a.audio }}</option>{% endif %}
       </select></label>
-    <label>Stop after (seconds) <input type="number" name="max_seconds" min="1" value="{{ a.max_seconds or '' }}" placeholder="play to the end">
+    <label>Stop after (seconds) <input type="number" name="max_seconds" min="1" value="{{ a.max_seconds or '' }}" placeholder="play to the end" data-short-stop="{{ short_play_seconds }}">
+      <span class="hint warn" data-short-stop-hint {{ '' if 0 < (a.max_seconds or 0)|float < short_play_seconds else 'hidden' }}>
+        That's very short. Speakers take a few seconds to start, so this may sound like nothing played.
+        Leave it empty to play the whole file.</span>
     </label>
 
     <span class="label">Devices</span>

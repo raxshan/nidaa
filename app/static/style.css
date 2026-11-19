@@ -91,6 +91,8 @@ form.inline { display: inline; margin: 0; }
 
 .flash { padding: 10px 14px; border-radius: 10px; margin-bottom: var(--gap); background: var(--good-bg); color: var(--good); }
 .flash.error { background: var(--bad-bg); color: var(--bad); }
+.flash.warn, .hint.warn { background: var(--warn-bg); color: var(--warn); }
+.hint.warn { padding: 6px 10px; border-radius: 8px; margin-top: 6px; }
 .flash ul { margin: 6px 0 0; padding-left: 20px; }
 
 .status-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--gap); }
