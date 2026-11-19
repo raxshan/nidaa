@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+{% macro post(action, label, cls="", confirm="", extra="") %}
+<form method="post" action="{{ action }}" class="inline" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <input type="hidden" name="version" value="{{ version }}">
+  {{ extra|safe }}
+  <button class="{{ cls }}">{{ label }}</button>
+</form>
+{% endmacro %}
+{% block content %}
+<div class="head">
+  <h1>Events</h1>
+  <div class="new-buttons">
+    <a class="button" href="/events/new?type=weekly">+ Weekly</a>
+    <a class="button" href="/events/new?type=yearly">+ Yearly</a>
+    <a class="button" href="/events/new?type=once">+ One-off</a>
+    <a class="button" href="/events/new?type=prayer">+ Prayer-relative</a>
+  </div>
+</div>
+
+<div class="cards">
+{% for r in rows %}
+  <article class="card event {{ 'disabled' if not r.enabled }} {{ 'invalid' if not r.valid }}">
+    <div class="event-head">
+      <div>
+        <a class="title" href="/events/{{ r.id|urlencode }}/edit">{{ r.name }}</a>
+        <div class="muted small">{{ r.id }} · <span class="tag">{{ r.type }}</span></div>
+      </div>
+      <span class="pill {{ 'good' if r.enabled and r.valid else 'muted' }}">
+        {{ 'invalid' if not r.valid else ('on' if r.enabled else 'off') }}</span>
+    </div>
+    <div>{{ r.schedule }}</div>
+    <div class="muted small">Next: {{ r.next|when(now) if r.next else '—' }}
+      {% if r.skip_pending %}<span class="pill warn">next one will be skipped</span>{% endif %}
+      · {{ r.devices|join(', ') }}</div>
+    <div class="actions">
+      {% if r.skip_pending %}
+        {{ post("/events/" ~ r.id|urlencode ~ "/unskip", "Cancel skip") }}
+      {% elif r.enabled and r.valid %}
+        {{ post("/events/" ~ r.id|urlencode ~ "/skip", "Skip next", confirm="Skip the next occurrence of " ~ r.name ~ "?") }}
+      {% endif %}
+      {% if r.valid %}{{ post("/events/" ~ r.id|urlencode ~ "/test", "Test now", confirm="Play " ~ r.name ~ " now on its devices?") }}{% endif %}
+      {% if r.prayer %}
+        {{ post("/events/" ~ r.id|urlencode ~ "/toggle", "Disable" if r.enabled else "Enable",
+                confirm="This changes a prayer Adhan. Continue?",
+                extra='<input type="hidden" name="confirm_prayer" value="on">') }}
+      {% else %}
+        {{ post("/events/" ~ r.id|urlencode ~ "/toggle", "Disable" if r.enabled else "Enable") }}
+      {% endif %}
+      <a class="button" href="/events/{{ r.id|urlencode }}/duplicate">Duplicate</a>
+      {% if not r.prayer %}
+        {{ post("/events/" ~ r.id|urlencode ~ "/delete", "Delete", cls="danger", confirm="Delete " ~ r.name ~ "? A config backup is kept.") }}
+      {% endif %}
+    </div>
+  </article>
+{% else %}
+  <p class="muted">No events yet.</p>
+{% endfor %}
+</div>
+{% endblock %}

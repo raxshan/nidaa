@@ -1,0 +1,4 @@
+# Mac-side testing:  uv venv -p python3.11 .venv && uv pip install -p .venv -r requirements-dev.txt
+-r requirements-dashboard.txt
+pytest
+httpx

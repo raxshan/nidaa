@@ -1,0 +1,169 @@
+{
+  "settings": {
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "timezone": "America/New_York",
+    "calculation_method": "NORTH_AMERICA",
+    "audio_base_url": "http://192.168.1.50:8080/audio",
+    "default_volume": 0.35,
+    "max_volume": 0.8,
+    "grace_seconds": 120,
+    "conflict_window_minutes": 3,
+    "history_days": 90
+  },
+  "devices": {
+    "Bedroom display": {
+      "enabled": true
+    },
+    "Living Room display": {
+      "enabled": true
+    },
+    "Kitchen speaker": {
+      "enabled": true
+    }
+  },
+  "events": [
+    {
+      "id": "prayer-fajr",
+      "name": "Fajr Adhan",
+      "enabled": true,
+      "trigger": {
+        "type": "prayer",
+        "prayer": "Fajr"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "devices": {
+          "Bedroom display": 0.25,
+          "Living Room display": 0.2,
+          "Kitchen speaker": 0.2
+        }
+      }
+    },
+    {
+      "id": "prayer-dhuhr",
+      "name": "Dhuhr Adhan",
+      "enabled": true,
+      "trigger": {
+        "type": "prayer",
+        "prayer": "Dhuhr"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "devices": {
+          "Bedroom display": 0.35,
+          "Living Room display": 0.35,
+          "Kitchen speaker": 0.35
+        }
+      }
+    },
+    {
+      "id": "prayer-asr",
+      "name": "Asr Adhan",
+      "enabled": true,
+      "trigger": {
+        "type": "prayer",
+        "prayer": "Asr"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "devices": {
+          "Bedroom display": 0.35,
+          "Living Room display": 0.35,
+          "Kitchen speaker": 0.35
+        }
+      }
+    },
+    {
+      "id": "prayer-maghrib",
+      "name": "Maghrib Adhan",
+      "enabled": true,
+      "trigger": {
+        "type": "prayer",
+        "prayer": "Maghrib"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "devices": {
+          "Bedroom display": 0.35,
+          "Living Room display": 0.35,
+          "Kitchen speaker": 0.35
+        }
+      }
+    },
+    {
+      "id": "prayer-isha",
+      "name": "Isha Adhan",
+      "enabled": true,
+      "trigger": {
+        "type": "prayer",
+        "prayer": "Isha"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "devices": {
+          "Bedroom display": 0.3,
+          "Living Room display": 0.3,
+          "Kitchen speaker": 0.3
+        }
+      }
+    },
+    {
+      "id": "example-weekday-morning",
+      "name": "Weekday morning reminder (example)",
+      "enabled": false,
+      "trigger": {
+        "type": "weekly",
+        "days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "time": "07:00"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "max_seconds": 60,
+        "devices": {
+          "Kitchen speaker": 0.3
+        }
+      }
+    },
+    {
+      "id": "example-birthday",
+      "name": "Birthday message (example)",
+      "enabled": false,
+      "trigger": {
+        "type": "yearly",
+        "month": 6,
+        "day": 15,
+        "time": "08:00"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "max_seconds": 30,
+        "devices": {
+          "Kitchen speaker": 0.3
+        }
+      }
+    },
+    {
+      "id": "example-once",
+      "name": "One-off announcement (example)",
+      "enabled": false,
+      "trigger": {
+        "type": "once",
+        "datetime": "2026-12-31T20:00"
+      },
+      "action": {
+        "audio": "sound-test.mp3",
+        "max_seconds": 20,
+        "devices": {
+          "Living Room display": 0.25
+        }
+      }
+    }
+  ]
+}

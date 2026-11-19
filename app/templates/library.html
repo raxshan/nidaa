@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Library{% endblock %}
+{% block content %}
+<h1>Audio library</h1>
+
+<form method="post" action="/library/upload" enctype="multipart/form-data" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <label>Upload audio <input type="file" name="file" accept=".mp3,.m4a,.wav,.ogg,audio/*" required></label>
+  <p class="hint">MP3, M4A, WAV or OGG, up to {{ max_mb }} MB. Spaces become dashes; other special characters are removed.</p>
+  <label class="check"><input type="checkbox" name="overwrite"> Replace a file with the same name</label>
+  <button class="primary">Upload</button>
+</form>
+
+<div class="cards">
+{% for f in files %}
+  <article class="card">
+    <div class="event-head">
+      <strong class="break">{{ f.name }}</strong>
+      <span class="muted small">{{ f.size|size }} · {{ f.duration|duration }}</span>
+    </div>
+    <audio controls preload="none" src="{{ audio_base }}/{{ quote(f.name) }}"></audio>
+    <div class="muted small">
+      {% if f.used_by %}Used by: {{ f.used_by|join(', ') }}{% else %}Not used by any event{% endif %}
+    </div>
+    <form method="post" action="/library/delete" class="inline"
+          data-confirm="Delete {{ f.name }} from the Pi? This cannot be undone.">
+      <input type="hidden" name="csrf_token" value="{{ csrf }}">
+      <input type="hidden" name="name" value="{{ f.name }}">
+      <button class="danger" {{ 'disabled title="Used by an enabled event"' if f.used_by_enabled }}>Delete</button>
+    </form>
+  </article>
+{% else %}
+  <p class="muted">No audio files found.</p>
+{% endfor %}
+</div>
+{% endblock %}

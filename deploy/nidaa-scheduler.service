@@ -1,0 +1,17 @@
+# Template: render with deploy/render-units.sh (fills in @NIDAA_USER@, @NIDAA_HOME@, @NIDAA_VENV@).
+[Unit]
+Description=Nidaa scheduler (Adhan and scheduled audio on Google Cast)
+After=network-online.target nidaa-web.service
+Wants=network-online.target
+Requires=nidaa-web.service
+
+[Service]
+Type=simple
+User=@NIDAA_USER@
+WorkingDirectory=@NIDAA_HOME@/app
+ExecStart=@NIDAA_VENV@/bin/python @NIDAA_HOME@/app/nidaa_scheduler.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

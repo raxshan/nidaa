@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1>History</h1>
+<form method="get" class="card filters">
+  <label>Device <select name="device"><option value="">All</option>
+    {% for d in device_names %}<option {{ 'selected' if d == device }}>{{ d }}</option>{% endfor %}</select></label>
+  <label>Status <select name="status"><option value="">All</option>
+    {% for s in statuses %}<option {{ 'selected' if s == status }}>{{ s }}</option>{% endfor %}</select></label>
+  <label>Event <input name="event" value="{{ event }}" placeholder="event id"></label>
+  <button>Filter</button>
+</form>
+<div class="card scroll">
+<table class="list history">
+  <thead><tr><th>When</th><th>Event</th><th>Device</th><th>Volume</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr class="st-{{ r.status }}">
+      <td class="time">{{ r.ts|replace('T', ' ') }}</td>
+      <td>{{ r.event }}</td>
+      <td>{{ r.device }}</td>
+      <td>{{ r.volume|pct if r.volume else '—' }}</td>
+      <td><span class="pill">{{ r.status }}</span>{% if r.error %}<div class="muted small">{{ r.error }}</div>{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">No history yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

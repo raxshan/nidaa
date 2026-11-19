@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Play{% endblock %}
+{% block content %}
+<h1>Play now</h1>
+{% if not status.alive %}<div class="flash error">The scheduler is not responding, so requests will wait until it is back (and expire after 5 minutes).</div>{% endif %}
+
+{% if cmd %}
+<div class="card" id="cmd-result" data-cmd="{{ cmd }}">
+  <span class="muted">Request {{ cmd }}:</span> <strong class="cmd-status">waiting for the scheduler…</strong>
+</div>
+{% endif %}
+
+<form method="post" action="/play" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <label>Audio
+    <select name="audio" required><option value="">— choose —</option>
+      {% for f in audio_files %}<option>{{ f }}</option>{% endfor %}</select></label>
+  <span class="label">Devices</span>
+  {% for name, vol, enabled in devices %}
+    <div class="device-row">
+      <input type="hidden" name="dev_{{ loop.index0 }}_name" value="{{ name }}">
+      <label class="check"><input type="checkbox" name="dev_{{ loop.index0 }}_on" {{ 'disabled' if not enabled }}> {{ name }}{% if not enabled %} <span class="muted">(muted)</span>{% endif %}</label>
+      <div class="slider"><input type="range" name="dev_{{ loop.index0 }}_vol" min="0" max="{{ max_volume }}" value="{{ [vol, max_volume]|min }}" data-out>
+        <output>{{ [vol, max_volume]|min }}%</output></div>
+    </div>
+  {% endfor %}
+  <label>Stop after (seconds) <input type="number" name="max_seconds" min="1" max="3600" placeholder="play to the end"></label>
+  <button class="primary">Play</button>
+</form>
+
+<section class="card">
+  <h2>Stop</h2>
+  <div class="actions">
+    {% for name, vol, enabled in devices %}
+    <form method="post" action="/stop" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf }}">
+      <input type="hidden" name="device" value="{{ name }}">
+      <button>Stop {{ name }}</button>
+    </form>
+    {% endfor %}
+    <form method="post" action="/stop" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf }}">
+      <button class="danger">Stop all</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

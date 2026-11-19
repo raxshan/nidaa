@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+<form method="post" action="/settings" class="form">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <input type="hidden" name="version" value="{{ version }}">
+
+  <section class="card">
+    <h2>Rooms</h2>
+    <p class="muted small">Untick a room to mute it for every event.</p>
+    {% for name, spec in devices.items() %}
+      <div class="device-row">
+        <input type="hidden" name="device_{{ loop.index0 }}_name" value="{{ name }}">
+        <label class="check"><input type="checkbox" name="device_{{ loop.index0 }}_enabled" {{ 'checked' if spec.enabled is not false }}> {{ name }}</label>
+      </div>
+    {% endfor %}
+    <label>Add a Cast device <input name="new_device" placeholder="exact Cast name, e.g. Kitchen display">
+      <span class="hint">Must match the name shown by <code>avahi-browse -rt _googlecast._tcp</code> exactly.</span></label>
+  </section>
+
+  <section class="card">
+    <h2>Volume</h2>
+    <div class="grid2">
+      <label>Max volume (%) <input type="number" name="max_volume" min="0" max="100" value="{{ (s.max_volume * 100)|round|int }}">
+        <span class="hint">Hard cap for every playback</span></label>
+      <label>Default volume (%) <input type="number" name="default_volume" min="0" max="100" value="{{ (s.default_volume * 100)|round|int }}"></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Prayer times</h2>
+    <div class="grid2">
+      <label>Latitude <input name="latitude" value="{{ s.latitude }}" inputmode="decimal"></label>
+      <label>Longitude <input name="longitude" value="{{ s.longitude }}" inputmode="decimal"></label>
+      <label>Timezone <input name="timezone" value="{{ s.timezone }}"></label>
+      <label>Calculation method
+        <select name="calculation_method">{% for m in methods %}<option {{ 'selected' if m == s.calculation_method }}>{{ m }}</option>{% endfor %}</select></label>
+      <label>Asr (madhab)
+        <select name="madhab">
+          <option value="" {{ 'selected' if not s.madhab }}>Default (Shafi'i)</option>
+          <option value="SHAFI" {{ 'selected' if s.madhab == 'SHAFI' }}>Shafi'i / Maliki / Hanbali</option>
+          <option value="HANAFI" {{ 'selected' if s.madhab == 'HANAFI' }}>Hanafi (later Asr)</option>
+        </select></label>
+      <label>High-latitude rule
+        <select name="high_latitude_rule">
+          <option value="" {{ 'selected' if not s.high_latitude_rule }}>Default (middle of the night)</option>
+          {% for r in ['MIDDLE_OF_THE_NIGHT', 'SEVENTH_OF_THE_NIGHT', 'TWILIGHT_ANGLE'] %}
+            <option {{ 'selected' if s.high_latitude_rule == r }}>{{ r }}</option>{% endfor %}
+        </select></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Scheduler</h2>
+    <div class="grid2">
+      <label>Grace window (seconds) <input type="number" name="grace_seconds" min="0" value="{{ s.grace_seconds }}">
+        <span class="hint">Play late after a restart if within this window</span></label>
+      <label>Conflict window (minutes) <input type="number" name="conflict_window_minutes" min="0" value="{{ s.conflict_window_minutes }}"></label>
+      <label>Keep history (days) <input type="number" name="history_days" min="1" value="{{ s.history_days }}"></label>
+      <label>Audio server URL <input name="audio_base_url" value="{{ s.audio_base_url }}"></label>
+    </div>
+  </section>
+
+  <div class="actions"><button class="primary">Save settings</button></div>
+</form>
+
+<section class="card">
+  <h2>Remove a device</h2>
+  <form method="post" action="/settings/remove-device" class="inline-form" data-confirm="Remove this device from the config?">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <input type="hidden" name="version" value="{{ version }}">
+    <select name="name">{% for name in devices %}<option>{{ name }}</option>{% endfor %}</select>
+    <button class="danger">Remove</button>
+  </form>
+  <p class="hint">Only possible when no event uses the device.</p>
+</section>
+
+<section class="card">
+  <h2>Config backups</h2>
+  <p class="muted small">A backup is made before every change (last 20 kept).</p>
+  <ul>{% for b in backups %}<li>{{ b.name }}</li>{% else %}<li class="muted">None yet</li>{% endfor %}</ul>
+  <a class="button" href="/backups">All backups / restore</a>
+</section>
+{% endblock %}

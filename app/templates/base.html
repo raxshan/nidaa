@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf }}">
+  <title>{% block title %}Nidaa{% endblock %} · Nidaa</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+{% if nav != "login" %}
+<header class="top">
+  <a class="brand" href="/">Nidaa</a>
+  <nav>
+    <a href="/" class="{{ 'on' if nav == 'today' }}">Today</a>
+    <a href="/events" class="{{ 'on' if nav in ('events', 'event_form') }}">Events</a>
+    <a href="/prayers" class="{{ 'on' if nav == 'prayers' }}">Prayers</a>
+    <a href="/play" class="{{ 'on' if nav == 'play' }}">Play</a>
+    <a href="/library" class="{{ 'on' if nav == 'library' }}">Library</a>
+    <a href="/history" class="{{ 'on' if nav == 'history' }}">History</a>
+    <a href="/settings" class="{{ 'on' if nav in ('settings', 'backups') }}">Settings</a>
+  </nav>
+</header>
+{% endif %}
+<main>
+  {% for f in flashes %}<div class="flash {{ f.kind }}" role="status">{{ f.text }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+{% if nav != "login" %}
+<footer>
+  <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <button class="link">Log out</button></form>
+</footer>
+{% endif %}
+</body>
+</html>

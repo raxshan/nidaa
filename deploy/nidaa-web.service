@@ -1,0 +1,17 @@
+# Template: render with deploy/render-units.sh.
+# Serves @NIDAA_HOME@/audio as http://<pi>:8080/audio/ so Cast devices can fetch the MP3s.
+[Unit]
+Description=Nidaa audio file server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@NIDAA_USER@
+WorkingDirectory=@NIDAA_HOME@
+ExecStart=/usr/bin/python3 -m http.server 8080
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

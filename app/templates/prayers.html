@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Prayers{% endblock %}
+{% block content %}
+<h1>Prayers</h1>
+<p class="muted">Volume and audio for each Adhan on each device. Changes apply from the next prayer; no restart needed.</p>
+
+<form method="post" action="/prayers" class="form">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <input type="hidden" name="version" value="{{ version }}">
+  <div class="cards">
+  {% for r in rows %}
+    {% set p = r.prayer|lower %}
+    <section class="card">
+      {% if r.event %}
+      <div class="event-head">
+        <h2>{{ r.prayer }}</h2>
+        <label class="check"><input type="checkbox" name="{{ p }}_enabled" {{ 'checked' if r.event.enabled is not false }}> Enabled</label>
+      </div>
+      <label>Audio
+        <select name="{{ p }}_audio">
+          {% for f in audio_files %}<option {{ 'selected' if r.event.action.audio == f }}>{{ f }}</option>{% endfor %}
+          {% if r.event.action.audio and r.event.action.audio not in audio_files %}<option selected>{{ r.event.action.audio }}</option>{% endif %}
+        </select></label>
+      {% for name, on, vol, override in r.devices %}
+        <div class="device-row">
+          <label class="check"><input type="checkbox" name="{{ p }}_{{ loop.index0 }}_on" {{ 'checked' if on }}> {{ name }}</label>
+          <div class="slider"><input type="range" name="{{ p }}_{{ loop.index0 }}_vol" min="0" max="{{ max_volume }}" value="{{ [vol, max_volume]|min }}" data-out>
+            <output>{{ [vol, max_volume]|min }}%</output></div>
+          {% if override %}<span class="hint">uses {{ override }}</span>{% endif %}
+        </div>
+      {% endfor %}
+      {% else %}
+        <h2>{{ r.prayer }}</h2>
+        <p class="muted">No event for this prayer. <a href="/events/new?type=prayer">Create one</a>.</p>
+      {% endif %}
+    </section>
+  {% endfor %}
+  </div>
+  <div class="card sticky-save">
+    <label class="check confirm"><input type="checkbox" name="confirm_prayer"> I am changing prayer Adhans</label>
+    <button class="primary">Save prayers</button>
+  </div>
+</form>
+{% endblock %}

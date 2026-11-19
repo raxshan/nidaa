@@ -1,0 +1,16 @@
+# Template: render with deploy/render-units.sh.
+[Unit]
+Description=Nidaa dashboard
+After=network-online.target nidaa-scheduler.service
+Wants=network-online.target
+
+[Service]
+User=@NIDAA_USER@
+WorkingDirectory=@NIDAA_HOME@/app
+EnvironmentFile=/etc/nidaa-dashboard.env
+ExecStart=@NIDAA_VENV@/bin/uvicorn nidaa_dashboard:app --host 0.0.0.0 --port 8081 --workers 1
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

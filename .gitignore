@@ -1,0 +1,36 @@
+# Your own configuration (start from app/config.example.json / deploy.env.example)
+app/config.json
+deploy.env
+deploy/rendered/
+
+# Household-only notes, inventories and scripts
+private/
+inventory/
+
+# Runtime files (owned by the Pi, never committed)
+state.json
+skips.json
+history.jsonl
+status.json
+audit.jsonl
+commands/
+config.json.bak-*
+*.tmp
+*.lock
+
+# Audio: only the bundled test sound is part of the repo
+audio/*
+!audio/sound-test.mp3
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.venv39/
+.pytest_cache/
+
+# Local dev
+.devrun/
+.env
+*.env
+.DS_Store

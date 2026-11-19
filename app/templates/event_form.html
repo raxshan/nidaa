@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% set t = event.trigger or {} %}
+{% set a = event.action or {} %}
+{% set ttype = t.type or 'weekly' %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'New' }} event{% endblock %}
+{% block content %}
+<h1>{{ 'Edit ' ~ (event.name or event.id) if mode == 'edit' else 'New event' }}</h1>
+{% if errors %}
+  <div class="flash error"><strong>Not saved:</strong><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+{% endif %}
+
+<form method="post" action="/events/save" class="card form" id="event-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <input type="hidden" name="version" value="{{ version }}">
+  {% if original_id %}<input type="hidden" name="original_id" value="{{ original_id }}">{% endif %}
+
+  <div class="grid2">
+    <label>Name <input name="name" value="{{ event.name or '' }}" placeholder="e.g. Sam's birthday"></label>
+    <label>ID <input name="id" value="{{ event.id or '' }}" required pattern="[a-z0-9][a-z0-9_\-]{0,63}"
+                     placeholder="lowercase-with-dashes" {% if is_prayer and mode == 'edit' %}readonly{% endif %}>
+      <span class="hint">a-z, 0-9, - and _</span></label>
+  </div>
+
+  <label class="check"><input type="checkbox" name="enabled" {{ 'checked' if event.enabled is not false }}> Enabled</label>
+
+  <fieldset>
+    <legend>When</legend>
+    <label>Type
+      <select name="trigger_type" id="trigger-type">
+        {% for opt, label in [('prayer', 'Relative to a prayer'), ('weekly', 'Weekly'), ('yearly', 'Yearly (birthday, anniversary)'), ('once', 'Once')] %}
+          <option value="{{ opt }}" {{ 'selected' if ttype == opt }}>{{ label }}</option>
+        {% endfor %}
+      </select></label>
+
+    <div data-show="prayer" class="grid2">
+      <label>Prayer
+        <select name="prayer">{% for p in prayers %}<option {{ 'selected' if t.prayer == p }}>{{ p }}</option>{% endfor %}</select></label>
+      <label>Offset (minutes) <input type="number" name="offset_minutes" value="{{ t.offset_minutes or 0 }}" step="1">
+        <span class="hint">negative = before, e.g. -45 for suhoor</span></label>
+    </div>
+
+    <div data-show="prayer weekly">
+      <span class="label">Days <span class="hint" data-show="prayer">(none ticked = every day)</span></span>
+      <div class="days">
+        {% for d in weekdays %}
+          <label class="check"><input type="checkbox" name="days" value="{{ d }}" {{ 'checked' if t.days and d in t.days }}> {{ d|title }}</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div data-show="yearly" class="grid2">
+      <label>Month
+        <select name="month">{% for m in months %}<option value="{{ loop.index }}" {{ 'selected' if t.month == loop.index }}>{{ m }}</option>{% endfor %}</select></label>
+      <label>Day <input type="number" name="day" min="1" max="31" value="{{ t.day or '' }}">
+        <span class="hint">Feb 29 plays on Feb 28 in non-leap years</span></label>
+    </div>
+
+    <div data-show="weekly yearly">
+      <label>Time <input type="time" name="time" value="{{ t.time or '' }}"></label>
+    </div>
+
+    <div data-show="once">
+      <label>Date and time <input type="datetime-local" name="once_datetime" value="{{ (t.datetime or '')[:16] }}"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>What to play</legend>
+    <label>Audio
+      <select name="audio">
+        <option value="">— choose —</option>
+        {% for f in audio_files %}<option {{ 'selected' if a.audio == f }}>{{ f }}</option>{% endfor %}
+        {% if a.audio and a.audio not in audio_files %}<option selected>{{ a.audio }}</option>{% endif %}
+      </select></label>
+    <label>Stop after (seconds) <input type="number" name="max_seconds" min="1" value="{{ a.max_seconds or '' }}" placeholder="play to the end">
+    </label>
+
+    <span class="label">Devices</span>
+    <div class="devices">
+    {% for name, on, vol, override in devices %}
+      <div class="device-row">
+        <input type="hidden" name="dev_{{ loop.index0 }}_name" value="{{ name }}">
+        <label class="check"><input type="checkbox" name="dev_{{ loop.index0 }}_on" {{ 'checked' if on }}> {{ name }}</label>
+        <div class="slider"><input type="range" name="dev_{{ loop.index0 }}_vol" min="0" max="{{ max_volume }}" value="{{ [vol, max_volume]|min }}" data-out>
+          <output>{{ [vol, max_volume]|min }}%</output></div>
+        <select name="dev_{{ loop.index0 }}_audio" class="override" title="Different audio on this device">
+          <option value="">same audio</option>
+          {% for f in audio_files %}<option {{ 'selected' if override == f }}>{{ f }}</option>{% endfor %}
+        </select>
+      </div>
+    {% endfor %}
+    </div>
+    <p class="hint">Volume is capped at {{ max_volume }}% (Settings → max volume).</p>
+  </fieldset>
+
+  <details {{ 'open' if event.priority is defined or event.active_from or event.active_until }}>
+    <summary>Advanced</summary>
+    <div class="grid2">
+      <label>Active from <input type="date" name="active_from" value="{{ event.active_from or '' }}"></label>
+      <label>Active until <input type="date" name="active_until" value="{{ event.active_until or '' }}"></label>
+    </div>
+    <label>Priority <input type="number" name="priority" value="{{ event.priority if event.priority is defined else '' }}" placeholder="default by type">
+      <span class="hint">Default: prayer 100, once 60, yearly 50, weekly 40. Lower-priority events within the conflict window of a higher one are skipped.</span></label>
+  </details>
+
+  {% if is_prayer %}
+  <label class="check confirm"><input type="checkbox" name="confirm_prayer" required> I am changing a prayer Adhan</label>
+  {% endif %}
+
+  <div class="actions">
+    <button class="primary">Save</button>
+    <a class="button" href="/events">Cancel</a>
+  </div>
+</form>
+{% endblock %}

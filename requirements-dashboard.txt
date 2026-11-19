@@ -1,0 +1,11 @@
+# Dashboard dependencies. The Pi runs Python 3.9.2, so these are the newest versions that
+# support 3.9 (fastapi >= 0.129 needs 3.11). Full test suite passes with these on 3.9 and 3.11.
+# On the Pi:  $NIDAA_VENV/bin/pip install -r requirements-dashboard.txt
+# The scheduler itself only needs pychromecast + adhanpy (tested: PyChromecast 13.1.0 and 14.1.1, adhanpy 1.0.5).
+fastapi==0.128.8
+starlette==0.49.3
+uvicorn[standard]==0.39.0
+jinja2==3.1.6
+python-multipart==0.0.20
+itsdangerous==2.2.0
+mutagen==1.47.0

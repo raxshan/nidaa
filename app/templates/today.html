@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Today{% endblock %}
+{% block content %}
+<section class="status-row" id="status-row">
+  <span class="badge {{ 'good' if status.alive else 'bad' }}" id="sched-badge"
+        title="status.json age: {{ status.age_seconds|int if status.age_seconds is not none else 'none' }} s">
+    {{ 'Scheduler running' if status.alive else 'Scheduler not responding' }}</span>
+  {% for name in devices %}
+    {% set d = status.devices.get(name) if status.devices else none %}
+    <span class="badge {{ 'muted' if devices[name].enabled is false else ('good' if d and d.online else ('bad' if d else 'unknown')) }}"
+          data-device="{{ name }}">
+      {{ name }}{% if devices[name].enabled is false %} · muted{% elif d is none %} · ?{% elif not d.online %} · offline{% endif %}</span>
+  {% endfor %}
+</section>
+{% if status.last_error %}<div class="flash error">Last scheduler error: {{ status.last_error }}</div>{% endif %}
+
+<section class="card next">
+  {% if next_occ %}
+    <div class="muted">Next</div>
+    <div class="big">{{ next_occ.event.name or next_occ.event.id }}</div>
+    <div>{{ next_occ.when|when(now) }} · <strong data-countdown="{{ next_occ.when.isoformat() }}"></strong></div>
+  {% else %}
+    <div class="big">Nothing scheduled in the next two days</div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Prayer times · {{ now.strftime('%A %b %-d') }}</h2>
+  {% if prayers %}
+  <ul class="prayers">
+    {% for name, t in prayers.items() %}
+      <li class="{{ 'past' if t < now }}"><span>{{ name }}</span><strong>{{ t.strftime('%-I:%M %p') }}</strong></li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">Prayer times could not be calculated.</p>{% endif %}
+  <p class="muted small">{{ settings.calculation_method }}{% if settings.madhab %} · {{ settings.madhab|title }} Asr{% endif %} · {{ settings.timezone }}</p>
+</section>
+
+<section class="card">
+  <h2>Today's schedule</h2>
+  {% if schedule %}
+  <table class="list">
+    <tbody>
+    {% for o in schedule %}
+      <tr class="st-{{ o.status|replace(' ', '-') }}">
+        <td class="time">{{ o.time }}</td>
+        <td><a href="/events/{{ o.event|urlencode }}/edit">{{ o.name }}</a>
+          <span class="tag">{{ o.type }}</span></td>
+        <td class="right"><span class="pill">{{ o.status }}{% if o.suppressed_by %} by {{ o.suppressed_by }}{% endif %}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No events today.</p>{% endif %}
+</section>
+{% endblock %}
