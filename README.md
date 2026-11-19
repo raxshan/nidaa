@@ -1,6 +1,6 @@
 # Nidaa
 
-Nidaa (نداء, "the call") plays the Adhan at the computed prayer times on Google Cast speakers and
+Nidaa (نداء, "the call") plays the Adhan at the computed prayer times on Wi-Fi smart speakers and
 smart displays, plus any other scheduled audio you like: weekly reminders, yearly birthdays, one-off
 announcements. It runs on a Raspberry Pi and comes with a small, phone-friendly web dashboard for your home network.
 
