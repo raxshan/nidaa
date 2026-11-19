@@ -33,6 +33,7 @@
     <div>{{ r.schedule }}</div>
     <div class="muted small">Next: {{ r.next|when(now) if r.next else '—' }}
       {% if r.skip_pending %}<span class="pill warn">next one will be skipped</span>{% endif %}
+      {% if r.short_stop %}<span class="pill warn" title="Speakers take a few seconds to start, so this may sound like nothing played">stops after {{ '%g'|format(r.short_stop) }}s</span>{% endif %}
       · {{ r.devices|join(', ') }}</div>
     <div class="actions">
       {% if r.skip_pending %}

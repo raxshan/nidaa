@@ -16,6 +16,18 @@
     update();
   });
 
+  // "Stop after" fields: warn while the value is too short to be heard.
+  document.querySelectorAll("input[data-short-stop]").forEach(function (input) {
+    var hint = input.parentElement.querySelector("[data-short-stop-hint]");
+    var limit = parseFloat(input.getAttribute("data-short-stop")) || 10;
+    var update = function () {
+      var v = parseFloat(input.value);
+      if (hint) hint.hidden = !(v > 0 && v < limit);
+    };
+    input.addEventListener("input", update);
+    update();
+  });
+
   // Event form: show only the fields for the chosen trigger type.
   var typeSelect = document.getElementById("trigger-type");
   if (typeSelect) {

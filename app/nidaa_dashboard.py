@@ -35,6 +35,8 @@ BASE_DIR = Path(__file__).resolve().parent
 LOGIN_MAX_FAILURES = 5
 LOGIN_LOCKOUT_SECONDS = 60
 SESSION_MAX_AGE = 30 * 24 * 3600
+# Cast devices often take a few seconds to buffer, so a shorter "stop after" can sound like nothing played.
+SHORT_PLAY_SECONDS = 10
 
 
 # ============================================================
@@ -239,6 +241,17 @@ def device_specs(event, config):
     return rows
 
 
+def short_stop(action):
+    """The event's max_seconds if it is too short to be heard reliably, else None."""
+    ms = (action or {}).get("max_seconds")
+    return ms if sched._is_number(ms) and 0 < ms < SHORT_PLAY_SECONDS else None
+
+
+def short_stop_text(seconds):
+    return (f"It stops after {seconds:g}s, which is usually too short to hear anything: speakers take a "
+            f"few seconds to start. Clear “Stop after” to play the whole file.")
+
+
 def event_rows(raw, config, now):
     skips = sched.pending_skips()
     valid = {e["id"]: e for e in config.events}
@@ -255,6 +268,7 @@ def event_rows(raw, config, now):
             "enabled": ev.get("enabled", True), "valid": parsed_ev is not None,
             "next": nxt, "skip_pending": eid in skips, "prayer": store.is_prayer_event(ev),
             "devices": list(((ev.get("action") or {}).get("devices") or {}).keys()),
+            "short_stop": short_stop(ev.get("action")),
         })
     return rows
 
@@ -315,7 +329,7 @@ def create_app():
             "csrf": request.session.get("csrf", ""), "flashes": flashes, "version": version,
             "nav": name.split(".")[0], "audio_base": raw.get("settings", {}).get(
                 "audio_base_url", sched.DEFAULT_SETTINGS["audio_base_url"]).rstrip("/"),
-            "quote": quote, **ctx})
+            "quote": quote, "short_play_seconds": SHORT_PLAY_SECONDS, **ctx})
 
     def back(url, request=None, message=None, kind="ok"):
         if request is not None and message:
@@ -457,6 +471,9 @@ def create_app():
             resp = _form_page(request, event, "edit" if original_id else "new", original_id, problems)
             resp.status_code = 409 if isinstance(exc, VersionConflict) else 422
             return resp
+        short = short_stop(ev.get("action"))
+        if short:
+            return back("/events", request, f"Saved {ev['id']}. {short_stop_text(short)}", "warn")
         return back("/events", request, f"Saved {ev['id']}.")
 
     @app.post("/events/{event_id}/toggle")
